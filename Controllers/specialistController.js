@@ -5,18 +5,15 @@ const cloudinary = require("../utils/cloudinary")
 
 
 
-
-
-
 module.exports.addspecialist = async (req, res) => {
-    const { Specialistname } = req.body
-    if (Specialistname == '') {
+    const { specialiseon } = req.body
+    if (specialiseon == '') {
         res.status(StatusCodes.BAD_REQUEST).json({
             status: "Failed",
             message: "Empty Field Not Accepted"
         })
     } else {
-        const specialistfind = await Specialist.findOne({ Specialistname })
+        const specialistfind = await Specialist.findOne({ specialiseon })
         if (specialistfind) {
             res.status(500).json({
                 status: "Failed",

@@ -39,6 +39,9 @@
     "nodemailer": "^6.7.5",
     "nodemon": "^2.0.16",
     "otp-generator": "^4.0.0",
+    "serverless": "^3.35.2",
+    "serverless-http": "^3.2.0",
+    "serverless-offline": "^13.2.0",
     "xss-clean": "^0.1.1"
   }
 }

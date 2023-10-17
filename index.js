@@ -1,6 +1,7 @@
 const express=require("express")
 const http=require("http")
 const NotFound=require("./Middlewares/notfound")
+const serverless = require("serverless-http");
 const db=require("./db");
 const helmet=require("helmet");
 const app=express()
@@ -101,7 +102,7 @@ app.use('/uploads', express.static('uploads'))
 app.use(express.static(path.join(__dirname, 'public')));
 const port = process.env.PORT || 8082;
 app.get("/", (req,res)=>{
-    res.status(StatusCodes.OK).send("Dr-Mritunjay-Backend")
+    res.status(StatusCodes.OK).send("Dr-Manish-Backend")
 })
 
 
@@ -116,4 +117,4 @@ const server=http.createServer(app)
  })
 start(); 
 
-
+module.exports = { handler: serverless(app) };
