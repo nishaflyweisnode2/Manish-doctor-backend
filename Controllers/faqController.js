@@ -6,41 +6,42 @@ const { Faqs } = require("../Models/faqsModel");
 
 
 module.exports.addfaqs = async (req, res) => {
-    const {faq}=req.body
-    if(faq==''){
+    const { question, answer } = req.body
+    if (question == '' || answer == '') {
         res.status(StatusCodes.BAD_REQUEST).json({
-            status:"Failed",
-            message:"Empty Field Not Accepted"
+            status: "Failed",
+            message: "Empty Field Not Accepted"
         })
-    }else{
-        const checkfaq=await Faqs.findOne({faq})
-        if(!checkfaq){
-            try{
-                const data= await new Faqs({
-                   faq:faq,
+    } else {
+        const checkfaq = await Faqs.findOne({ question })
+        if (!checkfaq) {
+            try {
+                const data = await new Faqs({
+                    question: question,
+                    answer: answer,
                 })
-                    await data.save()
-                    res.status(StatusCodes.CREATED).json({
-                        status:"Success",
-                        data,
-                        
-                    })  
-               }
-               catch(error){
+                await data.save()
+                res.status(StatusCodes.CREATED).json({
+                    status: "Success",
+                    data,
+
+                })
+            }
+            catch (error) {
                 console.log(error)
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                    status:"Failed",
-                    message:"Oops!!! Error Occurs"
+                    status: "Failed",
+                    message: "Oops!!! Error Occurs"
                 })
-               } 
-        }else{
+            }
+        } else {
             res.status(StatusCodes.CONFLICT).json({
-                status:"Failed",
-                message:"Faq Name Exist"
+                status: "Failed",
+                message: "Faq Name Exist"
             })
         }
-            
-             
+
+
     }
 }
 
@@ -50,21 +51,22 @@ module.exports.addfaqs = async (req, res) => {
 module.exports.editfaq = async (req, res) => {
     try {
         let updateid = await Faqs.findById(req.params.id);
-        if(updateid){
-        const data={
-            faq:req.body.faq || updateid.faq
-        };
-        faqdetails=await Faqs.findByIdAndUpdate(req.params.id, data, {new:true})
-        res.status(StatusCodes.OK).json({
-            message:"Faqs updated successfuly",
-            code:StatusCodes.OK,
-            data:faqdetails
-        })
-        }else{
+        if (updateid) {
+            const data = {
+                question: req.body.question || updateid.question,
+                answer: req.body.answer || updateid.answer
+            };
+            faqdetails = await Faqs.findByIdAndUpdate(req.params.id, data, { new: true })
+            res.status(StatusCodes.OK).json({
+                message: "Faqs updated successfuly",
+                code: StatusCodes.OK,
+                data: faqdetails
+            })
+        } else {
             res.status(StatusCodes.BAD_REQUEST).json({
-                code:StatusCodes.BAD_REQUEST,
-                status:"failed",
-                message:"Invalid Faqs ID",
+                code: StatusCodes.BAD_REQUEST,
+                status: "failed",
+                message: "Invalid Faqs ID",
             })
         }
     } catch (error) {
@@ -77,7 +79,7 @@ module.exports.editfaq = async (req, res) => {
 //DELETE
 module.exports.deletefaq = async (req, res) => {
     try {
-        const faqid=await Faqs.findByIdAndDelete(req.params.id)
+        const faqid = await Faqs.findByIdAndDelete(req.params.id)
         res.status(StatusCodes.OK).json({ message: "Faqs Deleted Successfully" })
     } catch (err) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Something Went Wrong" })
@@ -87,11 +89,11 @@ module.exports.deletefaq = async (req, res) => {
 
 module.exports.getsinglefaq = async (req, res) => {
     try {
-        const fazid=await Faqs.findById(req.params.id)
-        if(fazid){
-            res.status(StatusCodes.OK).json({ message: "success",fazid })
-        }else{
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Invalid Faq ID",status:"Failed" })
+        const fazid = await Faqs.findById(req.params.id)
+        if (fazid) {
+            res.status(StatusCodes.OK).json({ message: "success", fazid })
+        } else {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Invalid Faq ID", status: "Failed" })
         }
     } catch (err) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(err)
@@ -101,12 +103,12 @@ module.exports.getsinglefaq = async (req, res) => {
 
 
 //GET ALL CATEGPRIES
-module.exports.getallfaz =  async (req, res) => {
+module.exports.getallfaz = async (req, res) => {
     try {
         const data = await Faqs.find();
         res.status(StatusCodes.OK).json({
-            message:"success",
-            count:data.length,
+            message: "success",
+            count: data.length,
             data
         });
 
