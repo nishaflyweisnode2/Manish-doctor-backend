@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { AddAboutme} = require("../Controllers/aboutselfController");
+const { AddAboutme, getAboutMe } = require("../Controllers/aboutselfController");
 //const upload=require("../utils/multer")
-const { verifyToken} = require("../Middlewares/verifyToken");
+const { verifyToken } = require("../Middlewares/verifyToken");
 
-router.post('/addaboutme',verifyToken, AddAboutme);
+router.post('/addaboutme', verifyToken, AddAboutme);
+router.get('/addaboutme', verifyToken, getAboutMe);
 
 
 

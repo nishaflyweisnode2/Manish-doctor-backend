@@ -5,7 +5,7 @@ const { verifyToken, verifyTokenwithAuthorization, verifyTokenwithAdmin } = requ
 
 router.post('/signup', signUp);
 router.post('/login', login)
-router.post('/forgot-password/:userId', forgotPassword);
+router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.post('/verifyOtp', verifyOtp)
 router.get('/getuserprofile/me', verifyToken, getuserprofile)

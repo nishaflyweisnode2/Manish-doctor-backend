@@ -53,3 +53,30 @@ module.exports.AddAboutme = async (req, res) => {
         })
     }
 }
+
+
+module.exports.getAboutMe = async (req, res) => {
+    try {
+
+        const aboutMeData = await Aboutself.findOne({ userId: req.user.id }).populate('userId');
+
+        if (!aboutMeData) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: "Not Found",
+                message: "About Me data not found for the user",
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            code: StatusCodes.OK,
+            status: "success",
+            message: "About Me data retrieved",
+            data: aboutMeData,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: error.message,
+        });
+    }
+};

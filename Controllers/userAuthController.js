@@ -224,10 +224,10 @@ module.exports.login = async (req, res) => {
 
 
 module.exports.forgotPassword = async (req, res) => {
-    const { userId } = req.params;
+    const { email } = req.body;
 
     try {
-        const user = await userModel.findOne({ _id: userId });
+        const user = await userModel.findOne({ email: email });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
