@@ -49,6 +49,7 @@ const contactRouter = require('./Routes/contactRouter');
 const supportRouter = require('./Routes/supportRouters');
 const faqRouter = require('./Routes/faqRouter');
 const faqcontentRouter = require('./Routes/faqcontentRouter');
+const cartRoute = require('./Routes/cartRoute');
 
 
 
@@ -94,6 +95,7 @@ app.use('/api/contact', contactRouter);
 app.use('/api/support', supportRouter);
 app.use('/api/faq', faqRouter);
 app.use('/api/faqcontent', faqcontentRouter);
+app.use('/api/cart', cartRoute);
 
 
 
