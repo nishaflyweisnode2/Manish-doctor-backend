@@ -179,7 +179,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/manish-backend/dev/1699016441438-2023-11-03T13:00:41.438Z/manish-backend.zip"
+                "S3Key": "serverless/manish-backend/dev/1699367063492-2023-11-07T14:24:23.492Z/manish-backend.zip"
               },
               "Handler": "index.handler",
               "Runtime": "nodejs18.x",
@@ -197,14 +197,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionpiyC39O2Ji36isStP7QAPUg1priKbsz56ToasKlTOI": {
+          "AppLambdaVersionVjGNFsc2HikDysspvPIECeQsIgXEbtndPKy2QJ8lC4": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "O8Mbu3045uzb66XjQ9tw0Tb17lWQN5y9ULALKKDfCzc="
+              "CodeSha256": "JZ/5iaPEGHWnw7UbjrIx/hhoKiJ7nu9yVOlwJLDMc9E="
             }
           },
           "ApiGatewayRestApi": {
@@ -425,7 +425,7 @@
               "AppLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1699016385788": {
+          "ApiGatewayDeployment1699366980390": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -490,7 +490,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionpiyC39O2Ji36isStP7QAPUg1priKbsz56ToasKlTOI"
+              "Ref": "AppLambdaVersionVjGNFsc2HikDysspvPIECeQsIgXEbtndPKy2QJ8lC4"
             },
             "Export": {
               "Name": "sls-manish-backend-dev-AppLambdaFunctionQualifiedArn"
@@ -671,7 +671,7 @@
         "timeout": 6,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "AppLambdaVersionpiyC39O2Ji36isStP7QAPUg1priKbsz56ToasKlTOI"
+        "versionLogicalId": "AppLambdaVersionVjGNFsc2HikDysspvPIECeQsIgXEbtndPKy2QJ8lC4"
       }
     },
     "configValidationMode": "warn",
@@ -693,7 +693,7 @@
     "artifact": "C:\\Users\\Dev\\Downloads\\project\\Manish-doctor-backend\\.serverless\\manish-backend.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/manish-backend/dev/1699016441438-2023-11-03T13:00:41.438Z",
+    "artifactDirectoryName": "serverless/manish-backend/dev/1699367063492-2023-11-07T14:24:23.492Z",
     "artifact": "manish-backend.zip"
   }
 }

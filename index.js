@@ -50,6 +50,8 @@ const supportRouter = require('./Routes/supportRouters');
 const faqRouter = require('./Routes/faqRouter');
 const faqcontentRouter = require('./Routes/faqcontentRouter');
 const cartRoute = require('./Routes/cartRoute');
+const hospitalRoute = require('./Routes/hospitalRoute');
+const paymentRoute = require('./Routes/paymentRoute');
 
 
 
@@ -96,6 +98,8 @@ app.use('/api/support', supportRouter);
 app.use('/api/faq', faqRouter);
 app.use('/api/faqcontent', faqcontentRouter);
 app.use('/api/cart', cartRoute);
+app.use('/api/hospital', hospitalRoute);
+app.use('/api/payment', paymentRoute);
 
 
 
