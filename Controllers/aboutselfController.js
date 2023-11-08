@@ -5,9 +5,9 @@ const { StatusCodes } = require("http-status-codes");
 
 
 module.exports.AddAboutme = async (req, res) => {
-    const { firstname, lastname, email, weight, age, bloodgroup } = req.body
+    const { firstname, lastname, mobileNumber, email, weight, age, bloodgroup } = req.body
     try {
-        if (firstname == '' || lastname == '' || email == '' || weight == '' || bloodgroup == '' || age == '') {
+        if (firstname == '' || lastname == '' || mobileNumber == '' || email == '' || weight == '' || bloodgroup == '' || age == '') {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 status: "Failed",
                 message: "Empty Input Fields!"
@@ -25,6 +25,7 @@ module.exports.AddAboutme = async (req, res) => {
                 const data = new Aboutself({
                     firstname,
                     lastname,
+                    mobileNumber,
                     email,
                     age,
                     weight,

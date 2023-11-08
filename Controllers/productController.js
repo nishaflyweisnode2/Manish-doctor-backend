@@ -127,28 +127,57 @@ module.exports.getproductbyid = async (req, res) => {
 
 
 
+// module.exports.getproductbysubcategoryid = async (req, res) => {
+//     const params = req.params.subproductcategories
+//     console.log("params", params);
+//     try {
+//         const singleProduct = await Product.find(params)
+//         console.log("singleProduct", singleProduct);
+//         //.populate({path:"subcategory"})
+//         if (singleProduct) {
+//             res.status(StatusCodes.OK).json({
+//                 message: "success",
+//                 data: singleProduct
+//             })
+//         } else {
+//             res.status(StatusCodes.BAD_REQUEST).json({
+//                 status: "Failed",
+//                 message: "Invalid Product ID"
+//             })
+//         }
+
+
+//     } catch (error) {
+//         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error)
+//     }
+// }
+
 module.exports.getproductbysubcategoryid = async (req, res) => {
-    const params = req.params.subproductcategories
+    const subcategoryIds = req.params.subproductcategories.split(',').map(id => id.trim()); // Assuming subproductcategories is a comma-separated string of subcategory IDs
+
     try {
-        const singleProduct = await Product.find(params)
-        //.populate({path:"subcategory"})
-        if (singleProduct) {
+        const products = await Product.find({ subcategory: { $in: subcategoryIds } }).populate('subproductcategories');
+
+        if (products && products.length > 0) {
             res.status(StatusCodes.OK).json({
-                message: "success",
-                data: singleProduct
-            })
+                message: "Success",
+                data: products
+            });
         } else {
-            res.status(StatusCodes.BAD_REQUEST).json({
+            res.status(StatusCodes.NOT_FOUND).json({
                 status: "Failed",
-                message: "Invalid Product ID"
-            })
+                message: "No products found for the given subcategory IDs."
+            });
         }
-
-
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error)
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: "Failed",
+            message: "An error occurred while fetching products.",
+            error: error.message
+        });
     }
-}
+};
 
 
 
@@ -229,7 +258,7 @@ module.exports.editProduct = async (req, res) => {
             productDetails,
             rating,
         } = req.body;
-        
+
 
         existingProduct.name = name || existingProduct.name;
         existingProduct.price = price || existingProduct.price;

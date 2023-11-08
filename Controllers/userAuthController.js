@@ -222,6 +222,56 @@ module.exports.login = async (req, res) => {
     }
 };
 
+module.exports.socialLogin = async (req, res) => {
+    try {
+        const { firstname, lastname, email, socialType } = req.body;
+
+        const existingUser = await userModel.findOne({
+            $or: [{ email }],
+        });
+
+        if (existingUser) {
+            const accessToken = jwt.sign({
+                id: existingUser._id,
+                email: existingUser.email,
+                firstname: existingUser.firstname,
+                lastname: existingUser.lastname
+            }, process.env.SECRETK, { expiresIn: "365" });
+
+            // const token = jwt.sign({ _id: existingUser._id }, process.env.SECRET_KEY);
+
+            return res.status(200).json({
+                status: 200,
+                msg: "Login successfully",
+                userId: existingUser._id,
+                accessToken,
+            });
+        } else {
+            const user = await userModel.create({ firstname, lastname, email, socialType, userType: "Distributor" });
+
+            if (user) {
+                const accessToken = jwt.sign({
+                    id: user._id,
+                    email: user.email,
+                    firstname: user.firstname,
+                    lastname: user.lastname
+                }, process.env.SECRETK, { expiresIn: "365" });
+
+
+                return res.status(200).json({
+                    status: 200,
+                    msg: "Login successfully",
+                    userId: newUser._id,
+                    accessToken,
+                });
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: 500, message: "Server error", error: err.message });
+    }
+};
+
 
 module.exports.forgotPassword = async (req, res) => {
     const { email } = req.body;

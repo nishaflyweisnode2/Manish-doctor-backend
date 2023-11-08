@@ -1,10 +1,11 @@
 const router = require('express').Router();
-const { signUp, login, forgotPassword, resetPassword, verifyOtp, getuserprofile, getallusers, updateusersprofile } = require("../Controllers/userAuthController");
+const { signUp, login, socialLogin, forgotPassword, resetPassword, verifyOtp, getuserprofile, getallusers, updateusersprofile } = require("../Controllers/userAuthController");
 const upload = require("../utils/multer")
 const { verifyToken, verifyTokenwithAuthorization, verifyTokenwithAdmin } = require("../Middlewares/verifyToken");
 
 router.post('/signup', signUp);
 router.post('/login', login)
+router.post('/user/socialLogin', socialLogin);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.post('/verifyOtp', verifyOtp)

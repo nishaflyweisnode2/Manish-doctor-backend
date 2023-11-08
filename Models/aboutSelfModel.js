@@ -6,6 +6,7 @@ const AboutselfSchema = mongoose.Schema({
     lastname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     age: { type: String, required: true },
+    mobileNumber: { type: String, required: true },
     weight: { type: String, required: true },
     bloodgroup: { type: String, required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true }

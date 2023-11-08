@@ -7,9 +7,9 @@ const { verifyToken, verifyTokenwithAuthorization, verifyTokenwithAdmin } = requ
 
 
 router.post('/hospitals', verifyTokenwithAdmin, upload.single("image"), hospitalController.createHospital);
-router.get('/hospitals', verifyTokenwithAdmin, hospitalController.getAllHospital);
+router.get('/hospitals', verifyToken, hospitalController.getAllHospital);
 router.get('/hospitals/:id', verifyToken, hospitalController.getHospital);
-router.put('/hospitals/:id', verifyToken, upload.single("image"), hospitalController.updateHospital);
+router.put('/hospitals/:id', verifyTokenwithAdmin, upload.single("image"), hospitalController.updateHospital);
 router.delete('/hospitals/:id', verifyTokenwithAdmin, hospitalController.deleteHospital);
 
 module.exports = router;
