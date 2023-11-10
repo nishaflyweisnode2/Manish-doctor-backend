@@ -7,7 +7,6 @@ const CartItemSchema = mongoose.Schema({
     },
     quantity: {
         type: Number,
-        required: true,
         min: 1,
     },
     price: {
@@ -21,6 +20,24 @@ const CartSchema = mongoose.Schema({
         ref: 'User',
     },
     items: [CartItemSchema],
+    couponCode: {
+        type: String,
+    },
+    discountAmount: {
+        type: Number,
+        default: 0
+    },
+    isCoupon: {
+        type: Boolean,
+        default: false,
+    },
+    deliveryCharge: {
+        type: Number,
+        default: 0
+    },
+    totalAmount: {
+        type: Number,
+    },
 });
 
 module.exports = mongoose.model('Cart', CartSchema);

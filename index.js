@@ -1,24 +1,24 @@
-const express=require("express")
-const http=require("http")
-const NotFound=require("./Middlewares/notfound")
+const express = require("express")
+const http = require("http")
+const NotFound = require("./Middlewares/notfound")
 const serverless = require("serverless-http");
-const db=require("./db");
-const helmet=require("helmet");
-const app=express()
+const db = require("./db");
+const helmet = require("helmet");
+const app = express()
 const Grid = require("gridfs-stream")
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connection = require("./db")
-const xss=require("xss-clean")
-const path=require("path")
-const rateLimiter=require("express-rate-limit")
-const asyncRapper=require("./Middlewares/asyncRapper")
-const logger=require("./Middlewares/loggers")
+const xss = require("xss-clean")
+const path = require("path")
+const rateLimiter = require("express-rate-limit")
+const asyncRapper = require("./Middlewares/asyncRapper")
+const logger = require("./Middlewares/loggers")
 app.use(express())
 dotenv.config();
-const {StatusCodes}=require("http-status-codes")
+const { StatusCodes } = require("http-status-codes")
 app.use(logger)
 
 connection();
@@ -52,6 +52,9 @@ const faqcontentRouter = require('./Routes/faqcontentRouter');
 const cartRoute = require('./Routes/cartRoute');
 const hospitalRoute = require('./Routes/hospitalRoute');
 const paymentRoute = require('./Routes/paymentRoute');
+const couponRoute = require('./Routes/couponRoute');
+const appointmentRoute = require('./Routes/appointmentRoute');
+
 
 
 
@@ -63,9 +66,9 @@ const paymentRoute = require('./Routes/paymentRoute');
 app.set('trust proxy', 1)
 app.use(rateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 }))
 app.use(express.json());
 app.use(cors());
@@ -100,6 +103,8 @@ app.use('/api/faqcontent', faqcontentRouter);
 app.use('/api/cart', cartRoute);
 app.use('/api/hospital', hospitalRoute);
 app.use('/api/payment', paymentRoute);
+app.use('/api/coupon', couponRoute);
+app.use('/api/appointment', appointmentRoute);
 
 
 
@@ -107,7 +112,7 @@ app.use('/api/payment', paymentRoute);
 app.use('/uploads', express.static('uploads'))
 app.use(express.static(path.join(__dirname, 'public')));
 const port = process.env.PORT || 8082;
-app.get("/", (req,res)=>{
+app.get("/", (req, res) => {
     res.status(StatusCodes.OK).send("Dr-Manish-Backend")
 })
 
@@ -115,12 +120,12 @@ app.get("/", (req,res)=>{
 
 
 app.use(NotFound)
-const server=http.createServer(app)
- const start=asyncRapper(async ()=>{
+const server = http.createServer(app)
+const start = asyncRapper(async () => {
     server.listen(port, () => {
-            console.log(`We are running on port ${port}`);
-        })
- })
-start(); 
+        console.log(`We are running on port ${port}`);
+    })
+})
+start();
 
 module.exports = { handler: serverless(app) };

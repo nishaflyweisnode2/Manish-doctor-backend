@@ -1,5 +1,6 @@
 const Payment = require('../Models/paymentModel');
 const Cart = require('../Models/cartModel');
+const Coupon = require('../Models/couponModel');
 const { StatusCodes } = require('http-status-codes');
 
 
@@ -8,7 +9,7 @@ const { StatusCodes } = require('http-status-codes');
 exports.createPayment = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { paymentMethod } = req.body;
+        const { paymentMethod, address } = req.body;
 
         if (!paymentMethod) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -36,11 +37,12 @@ exports.createPayment = async (req, res) => {
             cart: userCart._id,
             amount,
             paymentMethod,
+            address
         });
 
         await payment.save();
 
-        await Cart.findByIdAndRemove(userCart._id);
+        // await Cart.findByIdAndRemove(userCart._id);
 
         return res.status(StatusCodes.CREATED).json({
             status: 'Success',
@@ -168,6 +170,24 @@ exports.updatePaymentStatus = async (req, res) => {
 
         await payment.save();
 
+        // Delete the user's cart if the payment status is 'Success'
+        if (status === 'Success') {
+            const userCart = await Cart.findByIdAndRemove(payment.cart);
+
+            if (userCart) {
+                return res.status(StatusCodes.OK).json({
+                    status: 'Success',
+                    message: 'Payment and user cart updated successfully',
+                    data: payment,
+                });
+            } else {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    status: 'Failed',
+                    message: 'Error deleting user cart',
+                });
+            }
+        }
+
         return res.status(StatusCodes.OK).json({
             status: 'Success',
             message: 'Payment updated successfully',
@@ -182,5 +202,6 @@ exports.updatePaymentStatus = async (req, res) => {
         });
     }
 };
+
 
 

@@ -123,20 +123,16 @@ exports.updateHospital = async (req, res) => {
                 });
             }
 
-            // Delete the previous image from Cloudinary
             if (hospital.cloudinary_id) {
                 await cloudinary.uploader.destroy(hospital.cloudinary_id);
             }
 
-            // Upload the new image to Cloudinary
             const result = await cloudinary.uploader.upload(req.file.path);
 
-            // Update the image data in the updateFields
             updateFields.image = result.secure_url;
             updateFields.cloudinary_id = result.public_id;
         }
 
-        // Add other fields to update, e.g., name, address, pincode, description, facilities
         if (req.body.name) {
             updateFields.name = req.body.name;
         }
@@ -183,10 +179,6 @@ exports.updateHospital = async (req, res) => {
         });
     }
 };
-
-
-
-
 
 
 exports.deleteHospital = async (req, res) => {
