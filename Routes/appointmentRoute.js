@@ -6,7 +6,12 @@ const { verifyToken, verifyTokenwithAuthorization, verifyTokenwithAdmin } = requ
 
 
 router.post('/appointments', verifyToken, appointmentController.createAppointment);
+router.get('/appointments', verifyToken, appointmentController.getAppointments);
+router.get('/appointments/:appointmentId', verifyToken, appointmentController.getAppointmentById);
+router.post('/appointments', verifyToken, appointmentController.createAppointment);
+router.put('/appointments/:appointmentId', verifyToken, appointmentController.updateAppointment);
+router.delete('/appointments/:appointmentId', verifyToken, appointmentController.deleteAppointment);
 
-router.post('/checkAvailability/:doctorId', verifyToken, appointmentController.checkDoctorAvailability)
+
 
 module.exports = router;

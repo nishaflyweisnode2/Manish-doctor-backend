@@ -4,20 +4,10 @@ require('mongoose-double')(mongoose);
 const SchemaTypes = mongoose.Schema.Types;
 
 const doctorSchema = new Schema({
-    appointments: [{
+    availability: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Appointment',
-    }],
-    availability: [{
-        date: {
-            type: Date,
-            required: true,
-        },
-        slots: [{
-            type: String,
-            required: true,
-        }],
-    }],
+        ref: 'Availability',
+    },
     doctorname: { type: String, required: true },
     doctorspicture: { type: String },
     yearexperience: { type: String },
@@ -37,6 +27,7 @@ const doctorSchema = new Schema({
     },
     fee: { type: Number, default: 0 },
     treatmentCount: { type: Number, default: 0 },
+    maxPatients: { type: Number, default: 0 },
 }, { timestamps: true });
 
 doctorSchema.index({ location: '2dsphere' });

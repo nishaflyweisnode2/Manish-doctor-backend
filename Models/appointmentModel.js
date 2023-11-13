@@ -9,8 +9,12 @@ const appointmentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    avilableTime: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Availability',
+    },
     appointmentDate: {
-        type: Date,
+        type: String,
     },
     slot: {
         type: String,
@@ -19,6 +23,14 @@ const appointmentSchema = new mongoose.Schema({
     appointmentType: {
         type: String,
         enum: ['Online', 'Offline'],
+    },
+    startTime: {
+        type: String,
+        required: true,
+    },
+    endTime: {
+        type: String,
+        required: true,
     },
 }, { timestamps: true });
 

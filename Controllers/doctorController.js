@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const { Doctor } = require("../Models/doctorModel");
 const cloudinary = require("../utils/cloudinary")
+const Availability = require('../Models/slotAvailabilityModel');
 
 
 
@@ -72,7 +73,7 @@ exports.addDoctor = async (req, res) => {
 
 exports.getAllDoctors = async (req, res) => {
     try {
-        const doctors = await Doctor.find();
+        const doctors = await Doctor.find().populate('availability');
         return res.status(StatusCodes.OK).json({
             status: 'Success',
             message: 'Doctors retrieved successfully.',
@@ -92,7 +93,7 @@ exports.getAllDoctors = async (req, res) => {
 exports.getDoctorById = async (req, res) => {
     const doctorId = req.params.id;
     try {
-        const doctor = await Doctor.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId).populate('availability');
         if (!doctor) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 status: 'Failed',
@@ -183,27 +184,171 @@ exports.deleteDoctorById = async (req, res) => {
 };
 
 
-
-exports.updateDoctorAvailability = async (doctorId, appointmentDate, bookedSlot) => {
+exports.updateDoctorAvailability = async (req, res) => {
     try {
+        const doctorId = req.params.doctorId;
+        const { maxPatients, startTime, endTime } = req.body;
+
         const doctor = await Doctor.findById(doctorId);
 
         if (!doctor) {
-            return { success: false, message: 'Doctor not found' };
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Doctor not found',
+            });
         }
 
-        const availabilityForDate = doctor.availability.find(avail => avail.date.toDateString() === new Date(appointmentDate).toDateString());
+        let availability = await Availability.findOne({ doctor: doctorId, maxPatients });
 
-        if (availabilityForDate) {
-            availabilityForDate.slots = availabilityForDate.slots.filter(slot => slot !== bookedSlot);
-            await doctor.save();
-            return { success: true, message: 'Doctor availability updated' };
+        if (!availability) {
+            availability = new Availability({ doctor: doctorId, maxPatients });
         }
 
-        return { success: false, message: 'Availability not found for the specified date' };
+        await Doctor.findByIdAndUpdate(doctorId, { availability: availability._id });
+
+        const existingSlot = availability.slots.find(slot =>
+            slot.startTime === startTime && slot.endTime === endTime
+        );
+
+        if (existingSlot) {
+            return res.status(400).json({
+                status: 'Failed',
+                message: 'Slot already exists for the specified time',
+            });
+        }
+
+        availability.slots.push({
+            startTime,
+            endTime,
+            maxPatients
+        });
+
+        await availability.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Slot added to doctor availability',
+            data: availability,
+        });
     } catch (error) {
         console.error(error);
-        return { success: false, message: 'Error updating doctor availability' };
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error adding slot to doctor availability',
+            error: error.message,
+        });
     }
 };
+
+
+exports.updateNumberOfPatients = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+        const { slotId, maxPatients } = req.body;
+
+        const doctorAvailability = await Availability.findOne({ doctor: doctorId });
+
+        if (!doctorAvailability) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Doctor not found in Availability',
+            });
+        }
+
+        console.log("1", doctorAvailability.slots);
+
+        const foundSlot = doctorAvailability.slots.find(slot => slot._id.toString() === slotId);
+
+        console.log("2", foundSlot);
+
+        console.log("3", doctorAvailability._id);
+
+        if (!foundSlot) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Slot not found for the specified ID',
+            });
+        }
+
+        foundSlot.maxPatients = maxPatients;
+        await doctorAvailability.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Number of patients updated for the slot',
+            data: doctorAvailability,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error updating the number of patients for the slot',
+            error: error.message,
+        });
+    }
+};
+
+
+exports.deleteDoctorSlot = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+        const slotId = req.params.slotId;
+
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Doctor not found',
+            });
+        }
+
+        const availability = await Availability.findOne({
+            doctor: doctorId,
+        });
+
+        if (!availability) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Availability not found for the specified doctor',
+            });
+        }
+
+        const slotIndex = availability.slots.findIndex((slot) => slot._id.toString() === slotId);
+
+        if (slotIndex === -1) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Slot not found for the specified slotId',
+            });
+        }
+
+        availability.slots.splice(slotIndex, 1);
+
+        await availability.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Slot deleted from doctor availability',
+            data: availability,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error deleting slot from doctor availability',
+            error: error.message,
+        });
+    }
+};
+
+
+
+
+
+
+
+
+
+
 
