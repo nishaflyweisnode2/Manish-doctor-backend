@@ -8,7 +8,7 @@ const doctorSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Availability',
     },
-    doctorname: { type: String, required: true },
+    doctorname: { type: String, },
     doctorspicture: { type: String },
     yearexperience: { type: String },
     rating: { type: SchemaTypes.Double, default: 0 },
@@ -23,11 +23,30 @@ const doctorSchema = new Schema({
         },
         coordinates: {
             type: [Number],
+            default: [0, 0]
         },
     },
+    otp: { type: String, },
     fee: { type: Number, default: 0 },
     treatmentCount: { type: Number, default: 0 },
     maxPatients: { type: Number, default: 0 },
+    dateOfBirth: { type: Date },
+    registrationNumber: { type: String },
+    idProof: { type: String },
+    digitalSignature: { type: String },
+    clinicPhoto: { type: String },
+    letterHead: { type: String },
+    registrationCertificate: { type: String },
+    medicalDegrees: { type: String },
+    specialityId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Specialist',
+    },
+    age: { type: Number },
+    weight: { type: Number },
+    height: { type: Number },
+    registration1: { type: Boolean, default: false },
+    registration2: { type: Boolean, default: false },
 }, { timestamps: true });
 
 doctorSchema.index({ location: '2dsphere' });

@@ -2,11 +2,116 @@ const { StatusCodes } = require("http-status-codes");
 const { Doctor } = require("../Models/doctorModel");
 const cloudinary = require("../utils/cloudinary")
 const Availability = require('../Models/slotAvailabilityModel');
+const jwt = require("jsonwebtoken");
 
 
 
+const generateOTP = () => {
+    const otp = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+    return otp.toString();
+};
 
-exports.addDoctor = async (req, res) => {
+
+exports.SignUpUser = async (req, res) => {
+    try {
+
+        const { phonenumber } = req.body;
+        if (!phonenumber) {
+            return res.status(400).json("phonenumber is required");
+        }
+
+        const findUser = await Doctor.findOne({ phonenumber });
+        if (findUser) {
+            return res.status(409).json({ status: 409, message: "phone number already in use" });
+        }
+
+        const otp = generateOTP();
+        const newUser = await Doctor.create({ phonenumber, otp });
+        await newUser.save();
+
+        // const welcomeMessage = `Welcome, ${newUser.phonenumber}! Thank you for registering.`;
+        // const welcomeNotification = new Notification({
+        //     recipient: newUser._id,
+        //     content: welcomeMessage,
+        //     type: 'welcome',
+        // });
+        // await welcomeNotification.save();
+
+        const accessToken = jwt.sign({
+            id: newUser.id,
+            phonenumber: req.body.phonenumber
+        }, process.env.SECRETK, { expiresIn: "365d" });
+        res.status(201).json({
+            message: "User created successfully",
+            token: accessToken,
+            data: newUser,
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
+
+exports.verifyOTP = async (req, res) => {
+    try {
+        const user = await Doctor.findById(req.params.id);
+        if (!user) {
+            return res.status(404).send({ status: 404, message: "User are not found" });
+        }
+
+        if (user.otp != req.body.otp) {
+            return res.status(400).send({ status: 400, message: "Invalid OTP" });
+        }
+        const accessToken = jwt.sign({
+            id: user.id,
+            phonenumber: req.body.phonenumber
+        }, process.env.SECRETK, { expiresIn: "365d" });
+
+        return res.status(200).json({
+            message: "OTP Verify Successfully",
+            token: accessToken,
+            data: user
+        })
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(400).send({ error: error.message });
+    }
+};
+
+
+exports.resendOTP = async (req, res) => {
+    try {
+        const { phonenumber } = req.body;
+        const user = await Doctor.findOne({ phonenumber: phonenumber });
+        if (!user) {
+            return res.status(404).send({ status: 404, message: "User not found" });
+        }
+        const otp = generateOTP();
+        const otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
+        const updated = await Doctor.findOneAndUpdate(
+            { _id: user._id },
+            { otp, otpExpiration, },
+            { new: true }
+        );
+        let obj = {
+            id: updated._id,
+            otp: updated.otp,
+            phonenumber: updated.phonenumber,
+        };
+        res.status(200).send({ status: 200, message: "OTP resent", data: obj });
+    } catch (error) {
+        console.error(error);
+        res
+            .status(500)
+            .send({ status: 500, message: "Server error" + error.message });
+    }
+};
+
+
+exports.addDoctorByAdmin = async (req, res) => {
     try {
         const {
             doctorname,
@@ -184,6 +289,164 @@ exports.deleteDoctorById = async (req, res) => {
 };
 
 
+exports.registration1 = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+        const {
+            doctorname,
+            dateOfBirth,
+            registrationNumber,
+            specialityId,
+            yearexperience,
+        } = req.body;
+
+        if (!doctorname || !dateOfBirth || !registrationNumber || !specialityId || !yearexperience) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: 'Failed',
+                message: 'Required fields are missing or empty.',
+            });
+        }
+
+        // const existingDoctor = await Doctor.findOne({ doctorname });
+
+        // if (existingDoctor) {
+        //     return res.status(StatusCodes.CONFLICT).json({
+        //         status: 'Failed',
+        //         message: 'Doctor already exists.',
+        //     });
+        // }
+
+        const existingDoctorID = await Doctor.findById(doctorId);
+
+        if (!existingDoctorID) {
+            return res.status(StatusCodes.CONFLICT).json({
+                status: 'Failed',
+                message: 'DoctorId not exists.',
+            });
+        }
+
+        const result = await cloudinary.uploader.upload(req.file.path);
+
+        existingDoctorID.doctorspicture = result.secure_url;
+        existingDoctorID.cloudinary_id = result.public_id;
+        existingDoctorID.doctorname = doctorname;
+        existingDoctorID.dateOfBirth = dateOfBirth;
+        existingDoctorID.registrationNumber = registrationNumber;
+        existingDoctorID.specialityId = specialityId;
+        existingDoctorID.yearexperience = yearexperience;
+
+        await existingDoctorID.save();
+
+        return res.status(StatusCodes.CREATED).json({
+            status: 'Success',
+            message: 'Doctor details updated successfully.',
+            data: existingDoctorID,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
+            error: error.message,
+        });
+    }
+};
+
+
+// exports.registration2 = async (req, res) => {
+//     try {
+//         const doctorId = req.params.doctorId;
+//         const {
+//             idProof,
+//             digitalSignature,
+//             clinicPhoto,
+//             letterHead,
+//             registrationCertificate,
+//             medicalDegrees
+//         } = req.body;
+
+//         if (!idProof || !digitalSignature || !clinicPhoto || !letterHead || !registrationCertificate || !medicalDegrees) {
+//             return res.status(StatusCodes.BAD_REQUEST).json({
+//                 status: 'Failed',
+//                 message: 'Required fields are missing or empty.',
+//             });
+//         }
+
+//         const existingDoctorID = await Doctor.findById(doctorId);
+
+//         if (!existingDoctorID) {
+//             return res.status(StatusCodes.CONFLICT).json({
+//                 status: 'Failed',
+//                 message: 'DoctorId not exists.',
+//             });
+//         }
+
+//         const result = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.doctorspicture = result.secure_url;
+//         existingDoctorID.cloudinary_id = result.public_id;
+
+//         const idProofResult = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.idProof = idProofResult.secure_url;
+
+//         const signatureResult = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.digitalSignature = signatureResult.secure_url;
+
+//         const clinicResult = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.clinicPhoto = clinicResult.secure_url;
+
+//         const letterHeadResult = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.letterHead = letterHeadResult.secure_url;
+
+//         const registrationCertificateResult = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.registrationCertificate = registrationCertificateResult.secure_url;
+
+//         const medicalDegreesResult = await cloudinary.uploader.upload(req.file.path);
+//         existingDoctorID.medicalDegrees = medicalDegreesResult.secure_url;
+
+
+//         await existingDoctorID.save();
+
+//         return res.status(StatusCodes.CREATED).json({
+//             status: 'Success',
+//             message: 'Doctor details updated successfully.',
+//             data: existingDoctorID,
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//             status: 'Failed',
+//             message: 'Oops!!! Error occurs.',
+//             error: error.message,
+//         });
+//     }
+// };
+
+exports.registration2 = async (req, res) => {
+    try {
+        const findDocument = await Doctor.findById({ _id: req.params.id });
+        if (!findDocument) {
+            return res.status(404).json({ status: 404, message: "Data not found." });
+        }
+
+        findDocument.idProof = req.files['idProof'][0].path || findDocument.idProof;
+        findDocument.digitalSignature = req.files['digitalSignature'][0].path || findDocument.digitalSignature;
+        findDocument.clinicPhoto = req.files['clinicPhoto'][0].path || findDocument.clinicPhoto;
+        findDocument.letterHead = req.files['letterHead'][0].path || findDocument.letterHead;
+        findDocument.registrationCertificate = req.files['registrationCertificate'][0].path || findDocument.registrationCertificate;
+        findDocument.medicalDegrees = req.files['medicalDegrees'][0].path || findDocument.medicalDegrees;
+
+        const updated = await findDocument.save();
+        return res.status(200).json({ message: "Updated", data: updated });
+    } catch (error) {
+        console.error("An error occurred:", error);
+        return res.status(500).json({
+            message: "An error occurred. Please try again later.",
+            error: error.message,
+        });
+    }
+};
+
+
 exports.updateDoctorAvailability = async (req, res) => {
     try {
         const doctorId = req.params.doctorId;
@@ -341,7 +604,6 @@ exports.deleteDoctorSlot = async (req, res) => {
         });
     }
 };
-
 
 
 
