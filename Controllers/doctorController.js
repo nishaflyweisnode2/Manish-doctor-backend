@@ -2,7 +2,9 @@ const { StatusCodes } = require("http-status-codes");
 const { Doctor } = require("../Models/doctorModel");
 const cloudinary = require("../utils/cloudinary")
 const Availability = require('../Models/slotAvailabilityModel');
+const Appointment = require('../Models/appointmentModel');
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 
 
@@ -176,7 +178,7 @@ exports.addDoctorByAdmin = async (req, res) => {
 };
 
 
-exports.getAllDoctors = async (req, res) => {
+exports.adminGetAllDoctors = async (req, res) => {
     try {
         const doctors = await Doctor.find().populate('availability');
         return res.status(StatusCodes.OK).json({
@@ -195,7 +197,7 @@ exports.getAllDoctors = async (req, res) => {
 };
 
 
-exports.getDoctorById = async (req, res) => {
+exports.adminGetDoctorById = async (req, res) => {
     const doctorId = req.params.id;
     try {
         const doctor = await Doctor.findById(doctorId).populate('availability');
@@ -263,7 +265,7 @@ exports.updateDoctorById = async (req, res) => {
 }
 
 
-exports.deleteDoctorById = async (req, res) => {
+exports.adminDeleteDoctorById = async (req, res) => {
     const doctorId = req.params.id;
     try {
         const deletedDoctor = await Doctor.findByIdAndDelete(doctorId);
@@ -353,74 +355,6 @@ exports.registration1 = async (req, res) => {
 };
 
 
-// exports.registration2 = async (req, res) => {
-//     try {
-//         const doctorId = req.params.doctorId;
-//         const {
-//             idProof,
-//             digitalSignature,
-//             clinicPhoto,
-//             letterHead,
-//             registrationCertificate,
-//             medicalDegrees
-//         } = req.body;
-
-//         if (!idProof || !digitalSignature || !clinicPhoto || !letterHead || !registrationCertificate || !medicalDegrees) {
-//             return res.status(StatusCodes.BAD_REQUEST).json({
-//                 status: 'Failed',
-//                 message: 'Required fields are missing or empty.',
-//             });
-//         }
-
-//         const existingDoctorID = await Doctor.findById(doctorId);
-
-//         if (!existingDoctorID) {
-//             return res.status(StatusCodes.CONFLICT).json({
-//                 status: 'Failed',
-//                 message: 'DoctorId not exists.',
-//             });
-//         }
-
-//         const result = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.doctorspicture = result.secure_url;
-//         existingDoctorID.cloudinary_id = result.public_id;
-
-//         const idProofResult = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.idProof = idProofResult.secure_url;
-
-//         const signatureResult = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.digitalSignature = signatureResult.secure_url;
-
-//         const clinicResult = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.clinicPhoto = clinicResult.secure_url;
-
-//         const letterHeadResult = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.letterHead = letterHeadResult.secure_url;
-
-//         const registrationCertificateResult = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.registrationCertificate = registrationCertificateResult.secure_url;
-
-//         const medicalDegreesResult = await cloudinary.uploader.upload(req.file.path);
-//         existingDoctorID.medicalDegrees = medicalDegreesResult.secure_url;
-
-
-//         await existingDoctorID.save();
-
-//         return res.status(StatusCodes.CREATED).json({
-//             status: 'Success',
-//             message: 'Doctor details updated successfully.',
-//             data: existingDoctorID,
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//             status: 'Failed',
-//             message: 'Oops!!! Error occurs.',
-//             error: error.message,
-//         });
-//     }
-// };
-
 exports.registration2 = async (req, res) => {
     try {
         const findDocument = await Doctor.findById({ _id: req.params.id });
@@ -428,6 +362,7 @@ exports.registration2 = async (req, res) => {
             return res.status(404).json({ status: 404, message: "Data not found." });
         }
 
+        findDocument.doctorspicture = req.files['doctorspicture'][0].path || findDocument.doctorspicture;
         findDocument.idProof = req.files['idProof'][0].path || findDocument.idProof;
         findDocument.digitalSignature = req.files['digitalSignature'][0].path || findDocument.digitalSignature;
         findDocument.clinicPhoto = req.files['clinicPhoto'][0].path || findDocument.clinicPhoto;
@@ -441,6 +376,121 @@ exports.registration2 = async (req, res) => {
         console.error("An error occurred:", error);
         return res.status(500).json({
             message: "An error occurred. Please try again later.",
+            error: error.message,
+        });
+    }
+};
+
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const { doctorId } = req.params;
+        const { email, doctorname, age, weight, height } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ status: StatusCodes.BAD_REQUEST, message: "Invalid user or doctor ID" });
+        }
+
+        let updatedProfile;
+        
+        let doctor = await Doctor.findById(doctorId);
+        
+        if (!doctor) {
+            return res.status(StatusCodes.NOT_FOUND).json({ status: StatusCodes.NOT_FOUND, message: "User or doctor not found" });
+        }
+        
+        if(req.file){
+            doctor.doctorspicture = req.file.path
+        }else{
+            doctor.doctorspicture =doctor.doctorspicture
+        }
+        doctor.email = email || doctor.email;
+        doctor.doctorname = doctorname || doctor.doctorname;
+        doctor.age = age || doctor.age;
+        doctor.weight = weight || doctor.weight;
+        doctor.height = height || doctor.height;
+
+        updatedProfile = await doctor.save();
+
+        res.status(StatusCodes.OK).json({
+            message: "Profile updated successfully",
+            data: updatedProfile,
+        });
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: error.message,
+        });
+    }
+};
+
+
+exports.getAllDoctors = async (req, res) => {
+    try {
+        const doctors = await Doctor.find();
+        return res.status(StatusCodes.OK).json({
+            status: 'Success',
+            data: doctors,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
+            error: error.message,
+        });
+    }
+};
+
+
+exports.getDoctorById = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: 'Failed',
+                message: 'Doctor not found.',
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            status: 'Success',
+            data: doctor,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
+            error: error.message,
+        });
+    }
+};
+
+
+exports.deleteDoctor = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+        const doctor = await Doctor.findByIdAndDelete(doctorId);
+
+        if (!doctor) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: 'Failed',
+                message: 'Doctor not found.',
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            status: 'Success',
+            message: 'Doctor deleted successfully.',
+            data: doctor,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
             error: error.message,
         });
     }
@@ -605,6 +655,37 @@ exports.deleteDoctorSlot = async (req, res) => {
     }
 };
 
+
+exports.getDoctorAppointment = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+
+        if (!doctorId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: 'Failed',
+                message: 'Doctor ID is required.',
+            });
+        }
+
+        const appointments = await Appointment.find({ 'doctor': doctorId })
+            .populate('user', 'firstname lastname userspicture')
+            .populate('avilableTime')
+            .exec();
+
+        return res.status(StatusCodes.OK).json({
+            status: 'Success',
+            message: 'Appointments retrieved successfully.',
+            data: appointments,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
+            error: error.message,
+        });
+    }
+};
 
 
 

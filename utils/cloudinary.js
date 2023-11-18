@@ -63,7 +63,7 @@ const storage11 = multer({ storage: storage })
 
 var kpUpload = storage11.fields([
     { name: 'idProof', maxCount: 1 },
-    // { name: 'photo', maxCount: 1 },
+    { name: 'doctorspicture', maxCount: 1 },
     { name: 'digitalSignature', maxCount: 1 },
     { name: 'clinicPhoto', maxCount: 1 },
     { name: 'letterHead', maxCount: 1 },
@@ -72,4 +72,4 @@ var kpUpload = storage11.fields([
 ]);
 
 module.exports = cloudinary;
-module.exports = kpUpload;
+module.exports = {kpUpload,storage11};

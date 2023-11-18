@@ -54,6 +54,7 @@ const hospitalRoute = require('./Routes/hospitalRoute');
 const paymentRoute = require('./Routes/paymentRoute');
 const couponRoute = require('./Routes/couponRoute');
 const appointmentRoute = require('./Routes/appointmentRoute');
+const chatRoute = require('./Routes/chatRoute');
 
 
 
@@ -105,6 +106,7 @@ app.use('/api/hospital', hospitalRoute);
 app.use('/api/payment', paymentRoute);
 app.use('/api/coupon', couponRoute);
 app.use('/api/appointment', appointmentRoute);
+app.use('/api/chat', chatRoute);
 
 
 
