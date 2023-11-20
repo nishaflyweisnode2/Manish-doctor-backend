@@ -11,7 +11,15 @@ const doctorSchema = new Schema({
     doctorname: { type: String, },
     doctorspicture: { type: String },
     yearexperience: { type: String },
-    rating: { type: SchemaTypes.Double, default: 0 },
+    // rating: { type: SchemaTypes.Double, default: 0 },
+    ratings: [
+        {
+            rating: { type: SchemaTypes.Double, required: true },
+            review: { type: String, required: true },
+            user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+            date: { type: Date, default: Date.now },
+        }
+    ],
     content: { type: String },
     phonenumber: { type: String },
     email: { type: String },
