@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const { SignUpUser, verifyOTP, resendOTP, addDoctorByAdmin, adminDeleteDoctorById, adminGetDoctorById, adminGetAllDoctors, updateDoctorById, registration1, registration2, updateProfile, updateDoctorAvailability, updateNumberOfPatients, deleteDoctorSlot, getDoctorAppointment,
-    getAllDoctors, getDoctorById, deleteDoctor, getPatientsByDoctorId, addRatingAndReview, getDoctorRatings, updateReview, deleteReview } = require("../Controllers/doctorController");
+    getAllDoctors, getDoctorById, deleteDoctor, getPatientsByDoctorId, addRatingAndReview, getDoctorRatings, updateReview, deleteReview, getAllReviews, addReplyToRating } = require("../Controllers/doctorController");
 const upload = require("../utils/multer")
 const { kpUpload, storage11 } = require("../utils/cloudinary")
+
 const { verifyToken, verifyTokenwithAuthorization, verifyTokenwithAdmin } = require("../Middlewares/verifyToken");
 
 
@@ -32,6 +33,10 @@ router.post('/doctors/:doctorId/ratings', verifyToken, addRatingAndReview);
 router.get('/doctors/:doctorId/ratings', verifyToken, getDoctorRatings);
 router.put('/doctors/:doctorId/reviews/:reviewId', verifyToken, updateReview);
 router.delete('/doctors/:doctorId/reviews/:reviewId', verifyToken, deleteReview);
+router.get('/doctor-reviews/:doctorId', verifyToken, getAllReviews);
+router.post('/ratings/:doctorId/:ratingId/reply', verifyToken, addReplyToRating);
+
+
 
 
 

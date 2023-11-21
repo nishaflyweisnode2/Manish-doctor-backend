@@ -824,85 +824,202 @@ exports.getDoctorRatings = async (req, res) => {
 
 
 exports.updateReview = async (req, res) => {
-  try {
-    const { doctorId, reviewId } = req.params;
-    const { newReview } = req.body;
+    try {
+        const userId = req.user.id;
+        const { doctorId, reviewId } = req.params;
+        const { rating, review } = req.body;
 
-    const doctor = await Doctor.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId);
 
-    if (!doctor) {
-      return res.status(404).json({
-        status: 'Failed',
-        message: 'Doctor not found',
-      });
+        if (!doctor) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Doctor not found',
+            });
+        }
+
+        if (!doctor.ratings || !Array.isArray(doctor.ratings)) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'ratings not found or invalid format',
+            });
+        }
+
+        const reviewToUpdate = doctor.ratings.find((r) => r._id == reviewId);
+
+        if (!reviewToUpdate) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Review not found',
+            });
+        }
+
+        if (rating !== undefined) {
+            reviewToUpdate.rating = rating;
+        }
+
+        if (review !== undefined) {
+            reviewToUpdate.review = review;
+        }
+
+        if (userId !== undefined) {
+            reviewToUpdate.user = userId;
+        }
+
+
+        await doctor.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Review updated successfully',
+            data: reviewToUpdate,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error updating review',
+            error: error.message,
+        });
     }
-
-    const reviewToUpdate = doctor.reviews.find((review) => review._id == reviewId);
-
-    if (!reviewToUpdate) {
-      return res.status(404).json({
-        status: 'Failed',
-        message: 'Review not found',
-      });
-    }
-
-    reviewToUpdate.text = newReview;
-    await doctor.save();
-
-    return res.status(200).json({
-      status: 'Success',
-      message: 'Review updated successfully',
-      data: reviewToUpdate,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      status: 'Failed',
-      message: 'Error updating review',
-      error: error.message,
-    });
-  }
 };
 
 
 
 exports.deleteReview = async (req, res) => {
-  try {
-    const { doctorId, reviewId } = req.params;
+    try {
+        const { doctorId, reviewId } = req.params;
 
-    const doctor = await Doctor.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId);
 
-    if (!doctor) {
-      return res.status(404).json({
-        status: 'Failed',
-        message: 'Doctor not found',
-      });
+        if (!doctor) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Doctor not found',
+            });
+        }
+
+        if (!doctor.ratings || !Array.isArray(doctor.ratings)) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'ratings not found or invalid format',
+            });
+        }
+
+        const reviewToDeleteIndex = doctor.ratings.findIndex((review) => review._id == reviewId);
+
+        if (reviewToDeleteIndex === -1) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Review not found',
+            });
+        }
+
+        doctor.ratings.splice(reviewToDeleteIndex, 1);
+        await doctor.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Review deleted successfully',
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error deleting review',
+            error: error.message,
+        });
     }
-
-    const reviewToDelete = doctor.reviews.find((review) => review._id == reviewId);
-
-    if (!reviewToDelete) {
-      return res.status(404).json({
-        status: 'Failed',
-        message: 'Review not found',
-      });
-    }
-
-    doctor.reviews = doctor.reviews.filter((review) => review._id != reviewId);
-    await doctor.save();
-
-    return res.status(200).json({
-      status: 'Success',
-      message: 'Review deleted successfully',
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      status: 'Failed',
-      message: 'Error deleting review',
-      error: error.message,
-    });
-  }
 };
 
 
+
+exports.getAllReviews = async (req, res) => {
+    try {
+        let data;
+        if (req.params.doctorId) {
+            const doctor = await Doctor.findById(req.params.doctorId);
+            if (!doctor) {
+                return res.status(404).json({
+                    status: 'Failed',
+                    message: 'Doctor not found',
+                });
+            }
+            data = doctor.ratings;
+        } else if (req.user && req.user.id) {
+            const doctors = await Doctor.find({ 'ratings.user': req.user.id });
+            const userReviews = [];
+            doctors.forEach(doctor => {
+                const reviews = doctor.ratings.filter(review => ratings.user.toString() === req.user.id);
+                userReviews.push({
+                    doctorId: doctor._id,
+                    doctorName: doctor.doctorname,
+                    reviews: reviews,
+                });
+            });
+            data = userReviews;
+        } else {
+            return res.status(400).json({
+                status: 'Failed',
+                message: 'Invalid request. Provide doctorId or ensure user is logged in.',
+            });
+        }
+        console.log(data);
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'get data',
+            data: data,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error retrieving reviews',
+            error: error.message,
+        });
+    }
+};
+
+
+
+exports.addReplyToRating = async (req, res) => {
+    try {
+        const { doctorId, ratingId } = req.params;
+        const { reply } = req.body;
+
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Doctor not found',
+            });
+        }
+
+        const ratingToUpdate = doctor.ratings.find((rating) => rating._id == ratingId);
+
+        if (!ratingToUpdate) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Rating not found',
+            });
+        }
+
+        ratingToUpdate.reply = reply;
+        await doctor.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Reply added to rating successfully',
+            data: ratingToUpdate,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error adding reply to rating',
+            error: error.message,
+        });
+    }
+};

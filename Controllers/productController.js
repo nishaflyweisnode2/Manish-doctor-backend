@@ -303,3 +303,275 @@ module.exports.searchProducts = async (req, res, next) => {
         res.status(500).end()
     }
 }
+
+
+
+exports.createRating = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const userId = req.user.id;
+        const { rating, comment } = req.body;
+
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Product not found',
+            });
+        }
+
+        const newRating = {
+            rating,
+            user: userId,
+            comment,
+        };
+
+        product.rating.push(newRating);
+        await product.save();
+
+        return res.status(201).json({
+            status: 'Success',
+            message: 'Rating created successfully',
+            data: newRating,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error creating rating',
+            error: error.message,
+        });
+    }
+};
+
+
+
+exports.getAllRatings = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+
+        const product = await Product.findById(productId).populate('rating.user');
+
+        if (!product) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Product not found',
+            });
+        }
+
+        const totalRatings = product.rating.length;
+
+        if (totalRatings === 0) {
+            return res.status(200).json({
+                status: 'Success',
+                message: 'No ratings available for the product',
+                data: {
+                    totalRatings: 0,
+                    averageRating: 0,
+                    ratings: [],
+                },
+            });
+        }
+
+        const sumRatings = product.rating.reduce((sum, rating) => sum + rating.rating, 0);
+        const newNumOfReviews = product.rating.length;
+        const averageRating = sumRatings / newNumOfReviews;
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Ratings retrieved successfully',
+            data: {
+                totalRatings,
+                averageRating,
+                ratings: product.rating,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error retrieving ratings',
+            error: error.message,
+        });
+    }
+};
+
+
+
+
+exports.getRatingById = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const ratingId = req.params.ratingId;
+
+        const product = await Product.findById(productId).populate('rating.user');
+
+        if (!product) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Product not found',
+            });
+        }
+
+        const rating = product.rating.id(ratingId);
+
+        if (!rating) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Rating not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 'Success',
+            data: rating,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error retrieving rating',
+            error: error.message,
+        });
+    }
+};
+
+
+
+exports.updateRating = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const productId = req.params.productId;
+        const ratingId = req.params.ratingId;
+        const { rating, comment } = req.body;
+
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Product not found',
+            });
+        }
+
+        const ratingToUpdate = product.rating.find(r => r._id.toString() === ratingId);
+
+        if (!ratingToUpdate) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Rating not found',
+            });
+        }
+
+        if (rating !== undefined) {
+            ratingToUpdate.rating = rating;
+        }
+        if (comment !== undefined) {
+            ratingToUpdate.comment = comment;
+        }
+        if (userId !== undefined) {
+            ratingToUpdate.user = userId;
+        }
+
+        await product.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Rating updated successfully',
+            data: ratingToUpdate,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error updating rating',
+            error: error.message,
+        });
+    }
+};
+
+
+
+exports.deleteRating = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const ratingId = req.params.ratingId;
+
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Product not found',
+            });
+        }
+
+        const ratingToDelete = product.rating.id(ratingId);
+
+        if (!ratingToDelete) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Rating not found',
+            });
+        }
+
+        ratingToDelete.remove();
+        await product.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Rating deleted successfully',
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error deleting rating',
+            error: error.message,
+        });
+    }
+};
+
+
+
+exports.addReplyToRating = async (req, res) => {
+    try {
+        const { productId, ratingId } = req.params;
+        const { reply } = req.body;
+
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Product not found',
+            });
+        }
+
+        const ratingToUpdate = product.rating.find(r => r._id.toString() === ratingId);
+
+        if (!ratingToUpdate) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Rating not found',
+            });
+        }
+
+        ratingToUpdate.reply = reply;
+        await product.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Reply added to rating successfully',
+            data: ratingToUpdate,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error adding reply to rating',
+            error: error.message,
+        });
+    }
+};

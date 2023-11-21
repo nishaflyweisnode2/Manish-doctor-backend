@@ -55,6 +55,8 @@ const paymentRoute = require('./Routes/paymentRoute');
 const couponRoute = require('./Routes/couponRoute');
 const appointmentRoute = require('./Routes/appointmentRoute');
 const chatRoute = require('./Routes/chatRoute');
+const reportRoute = require('./Routes/patientReportRoute');
+const videoCallRoute = require('./Routes/videoCallRoute');
 
 
 
@@ -107,6 +109,8 @@ app.use('/api/payment', paymentRoute);
 app.use('/api/coupon', couponRoute);
 app.use('/api/appointment', appointmentRoute);
 app.use('/api/chat', chatRoute);
+app.use('/api/report', reportRoute);
+app.use('/api/videoCall', videoCallRoute);
 
 
 
