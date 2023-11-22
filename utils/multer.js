@@ -1,5 +1,3 @@
-/* 
-
 const multer=require("multer")
 const storage=multer.diskStorage({
     destination:function(req, file, cb){
@@ -27,9 +25,8 @@ const upload=multer({
 
 module.exports=upload;
 
- */
 
-const multer = require("multer")
+// const multer = require("multer")
 const path = require("path")
 
 module.exports=multer({

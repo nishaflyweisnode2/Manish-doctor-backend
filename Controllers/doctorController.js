@@ -55,6 +55,43 @@ exports.SignUpUser = async (req, res) => {
     }
 };
 
+exports.loginUser = async (req, res) => {
+    try {
+        const { phonenumber } = req.body;
+
+        if (!phonenumber) {
+            return res.status(400).json({ status: 400, message: 'Phone number are required.' });
+        }
+
+        const user = await Doctor.findOne({ phonenumber });
+
+        if (!user) {
+            return res.status(401).json({ status: 401, message: 'Invalid credentials.' });
+        }
+
+        const otp = generateOTP();
+        user.otp = otp
+        await user.save();
+        const accessToken = jwt.sign({
+            id: user.id,
+            phonenumber: user.phonenumber
+        }, process.env.SECRETK, { expiresIn: '365d' });
+
+        res.status(200).json({
+            message: 'Login successful.',
+            // token: accessToken,
+            data: user,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
+            error: error.message,
+        });
+    }
+};
+
 
 exports.verifyOTP = async (req, res) => {
     try {
@@ -142,17 +179,18 @@ exports.addDoctorByAdmin = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path);
+        const result = await cloudinary.uploads(req.file.path);
+        console.log("1", result);
 
         const newDoctor = new Doctor({
-            doctorspicture: result.secure_url,
+            doctorspicture: result.url,
             doctorname,
             yearexperience,
             rating: req.body.rating || 0,
             content,
             phonenumber,
             email,
-            cloudinary_id: result.public_id,
+            cloudinary_id: result.id,
             location: {
                 coordinates: [longitude, latitude],
             },
@@ -229,11 +267,11 @@ exports.updateDoctorById = async (req, res) => {
         let updateid = await Doctor.findById(req.params.id);
 
         if (updateid) {
-            await cloudinary.uploader.destroy(updateid.cloudinary_id);
-            const result = await cloudinary.uploader.upload(req.file.path);
+            // await cloudinary.uploader.destroy(updateid.cloudinary_id);
+            const result = await cloudinary.uploads(req.file.path);
             const data = {
 
-                doctorspicture: result.secure_url || updateid.doctorspicture,
+                doctorspicture: result.url || updateid.doctorspicture,
                 doctorname: req.body.doctorname || updateid.doctorname,
                 yearexperience: req.body.yearexperience || updateid.yearexperience,
                 rating: req.body.rating || updateid.rating,
@@ -243,7 +281,7 @@ exports.updateDoctorById = async (req, res) => {
                 latitude: req.body.latitude || updateid.latitude,
                 longitude: req.body.longitude || updateid.longitude,
                 fee: req.body.fee || updateid.fee,
-                cloudinary_id: result.public_id || updateid.cloudinary_id
+                cloudinary_id: result.id || updateid.cloudinary_id
             };
             Doctorsdetails = await Doctor.findByIdAndUpdate(req.params.id, data, { new: true })
             res.status(StatusCodes.OK).json({
@@ -327,16 +365,17 @@ exports.registration1 = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path);
+        // const result = await cloudinary.uploads(req.file.path);
 
-        existingDoctorID.doctorspicture = result.secure_url;
-        existingDoctorID.cloudinary_id = result.public_id;
+        // existingDoctorID.doctorspicture = result.url;
+        // existingDoctorID.cloudinary_id = result.id;
         existingDoctorID.doctorname = doctorname;
         existingDoctorID.dateOfBirth = dateOfBirth;
         existingDoctorID.registrationNumber = registrationNumber;
         existingDoctorID.specialityId = specialityId;
         existingDoctorID.yearexperience = yearexperience;
 
+        existingDoctorID.registration1 = true
         await existingDoctorID.save();
 
         return res.status(StatusCodes.CREATED).json({
@@ -370,6 +409,7 @@ exports.registration2 = async (req, res) => {
         findDocument.registrationCertificate = req.files['registrationCertificate'][0].path || findDocument.registrationCertificate;
         findDocument.medicalDegrees = req.files['medicalDegrees'][0].path || findDocument.medicalDegrees;
 
+        findDocument.registration2 = true
         const updated = await findDocument.save();
         return res.status(200).json({ message: "Updated", data: updated });
     } catch (error) {

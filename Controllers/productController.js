@@ -42,10 +42,10 @@ module.exports.Addproducts = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path)
+        const result = await cloudinary.uploads(req.file.path)
         const newProduct = new Product({
-            productimage: result.secure_url,
-            cloudinary_id: result.public_id,
+            productimage: result.url,
+            cloudinary_id: result.id,
             productcategory,
             subproductcategories,
             name,

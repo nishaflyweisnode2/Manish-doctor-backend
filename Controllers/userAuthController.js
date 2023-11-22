@@ -469,14 +469,14 @@ module.exports.updateusersprofile = async (req, res) => {
     try {
         let updateuser = await userModel.findById(req.params.id);
         //await cloudinary.uploader.destroy(updateuser.cloudinary_id);
-        const result = await cloudinary.uploader.upload(req.file.path);
+        const result = await cloudinary.uploads(req.file.path);
         console.log(result);
         const data = {
-            userspicture: result.secure_url || updateuser.userspicture,
+            userspicture: result.url || updateuser.userspicture,
             firstname: req.body.firstname || updateuser.firstname,
             lastname: req.body.lastname || updateuser.lastname,
             email: req.body.email || updateuser.email,
-            cloudinary_id: result.public_id || updateuser.cloudinary_id
+            cloudinary_id: result.id || updateuser.cloudinary_id
         };
         updateuser = await userModel.findByIdAndUpdate(req.user.id, data, { new: true })
         res.status(200).json({

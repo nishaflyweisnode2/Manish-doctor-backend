@@ -39,7 +39,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-exports.uploads = (file, folder) => {
+var uploads = (file, folder) => {
     return new Promise((resolve, reject) => {
         cloudinary.uploader.upload(file, {
             resource_type: "auto",
@@ -72,4 +72,4 @@ var kpUpload = storage11.fields([
 ]);
 
 module.exports = cloudinary;
-module.exports = {kpUpload,storage11};
+module.exports = { kpUpload, storage11, uploads };

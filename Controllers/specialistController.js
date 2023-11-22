@@ -21,12 +21,12 @@ module.exports.addspecialist = async (req, res) => {
             })
         } else {
             try {
-                const result = await cloudinary.uploader.upload(req.file.path)
+                const result = await cloudinary.uploads(req.file.path)
                 const data = await new Specialist({
-                    specialistimage: result.secure_url,
+                    specialistimage: result.url,
                     Specialistname: req.body.Specialistname,
                     specialiseon: req.body.specialiseon,
-                    cloudinary_id: result.public_id
+                    cloudinary_id: result.id
                 })
                 await data.save()
                 res.status(StatusCodes.CREATED).json({
@@ -55,13 +55,13 @@ module.exports.editSpecialist = async (req, res) => {
         let updateid = await Specialist.findById(req.params.id);
 
         if (updateid) {
-            await cloudinary.uploader.destroy(updateid.cloudinary_id);
-            const result = await cloudinary.uploader.upload(req.file.path);
+            // await cloudinary.uploads.destroy(updateid.cloudinary_id);
+            const result = await cloudinary.uploads(req.file.path);
             const data = {
-                specialistimage: result.secure_url || updateid.specialistimage,
+                specialistimage: result.url || updateid.specialistimage,
                 Specialistname: req.body.Specialistname || updateid.Specialistname,
                 specialiseon: req.body.specialiseon || updateid.specialiseon,
-                cloudinary_id: result.public_id || updateid.cloudinary_id
+                cloudinary_id: result.id || updateid.cloudinary_id
             };
             specialistdetails = await Specialist.findByIdAndUpdate(req.params.id, data, { new: true })
             res.status(StatusCodes.OK).json({

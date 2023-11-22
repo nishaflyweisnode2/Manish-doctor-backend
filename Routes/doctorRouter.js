@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { SignUpUser, verifyOTP, resendOTP, addDoctorByAdmin, adminDeleteDoctorById, adminGetDoctorById, adminGetAllDoctors, updateDoctorById, registration1, registration2, updateProfile, updateDoctorAvailability, updateNumberOfPatients, deleteDoctorSlot, getDoctorAppointment,
+const { SignUpUser, loginUser, verifyOTP, resendOTP, addDoctorByAdmin, adminDeleteDoctorById, adminGetDoctorById, adminGetAllDoctors, updateDoctorById, registration1, registration2, updateProfile, updateDoctorAvailability, updateNumberOfPatients, deleteDoctorSlot, getDoctorAppointment,
     getAllDoctors, getDoctorById, deleteDoctor, getPatientsByDoctorId, addRatingAndReview, getDoctorRatings, updateReview, deleteReview, getAllReviews, addReplyToRating } = require("../Controllers/doctorController");
 const upload = require("../utils/multer")
 const { kpUpload, storage11 } = require("../utils/cloudinary")
@@ -8,6 +8,7 @@ const { verifyToken, verifyTokenwithAuthorization, verifyTokenwithAdmin } = requ
 
 
 router.post("/signup", SignUpUser);
+router.post("/login", loginUser);
 router.post("/verify/otp/:id", verifyOTP);
 router.post("/resend/otp", resendOTP);
 router.post('/addDoctor', verifyTokenwithAdmin, upload.single("doctorspicture"), addDoctorByAdmin);

@@ -15,11 +15,11 @@ exports.createHospital = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path)
+        const result = await cloudinary.uploads(req.file.path)
 
         const newHospital = new Hospital({
-            image: result.secure_url,
-            cloudinary_id: result.public_id,
+            image: result.url,
+            cloudinary_id: result.id,
             name,
             address,
             pincode,
@@ -127,10 +127,10 @@ exports.updateHospital = async (req, res) => {
                 await cloudinary.uploader.destroy(hospital.cloudinary_id);
             }
 
-            const result = await cloudinary.uploader.upload(req.file.path);
+            const result = await cloudinary.uploads(req.file.path);
 
-            updateFields.image = result.secure_url;
-            updateFields.cloudinary_id = result.public_id;
+            updateFields.image = result.url;
+            updateFields.cloudinary_id = result.id;
         }
 
         if (req.body.name) {
