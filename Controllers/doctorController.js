@@ -62,33 +62,30 @@ exports.loginUser = async (req, res) => {
         if (!phonenumber) {
             return res.status(400).json({ status: 400, message: 'Phone number are required.' });
         }
-
         const user = await Doctor.findOne({ phonenumber });
-
         if (!user) {
-            return res.status(401).json({ status: 401, message: 'Invalid credentials.' });
+            const otp = generateOTP();
+            const newUser = await Doctor.create({ phonenumber, otp });
+            await newUser.save();
+
+            // const welcomeMessage = `Welcome, ${newUser.phonenumber}! Thank you for registering.`;
+            // const welcomeNotification = new Notification({
+            //     recipient: newUser._id,
+            //     content: welcomeMessage,
+            //     type: 'welcome',
+            // });
+            // await welcomeNotification.save();
+            res.status(201).json({ message: "User created successfully", data: newUser, });
+        } else {
+            const otp = generateOTP();
+            user.otp = otp
+            await user.save();
+            return res.status(200).json({ message: 'Login successful.', data: user, });
         }
 
-        const otp = generateOTP();
-        user.otp = otp
-        await user.save();
-        const accessToken = jwt.sign({
-            id: user.id,
-            phonenumber: user.phonenumber
-        }, process.env.SECRETK, { expiresIn: '365d' });
-
-        res.status(200).json({
-            message: 'Login successful.',
-            // token: accessToken,
-            data: user,
-        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            error: error.message,
-        });
+        return res.status(500).json({ status: 500, message: 'Internal Server Error', error: error.message, });
     }
 };
 
