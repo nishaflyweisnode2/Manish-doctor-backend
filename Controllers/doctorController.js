@@ -418,6 +418,67 @@ exports.registration2 = async (req, res) => {
     }
 };
 
+exports.registration2body = async (req, res) => {
+    try {
+        const findDocument = await Doctor.findById({ _id: req.params.id });
+        if (!findDocument) {
+            return res.status(404).json({ status: 404, message: "Data not found." });
+        }
+
+        findDocument.doctorspicture = req.body.doctorspicture || findDocument.doctorspicture;
+        findDocument.idProof = req.body.idProof || findDocument.idProof;
+        findDocument.digitalSignature = req.body.digitalSignature || findDocument.digitalSignature;
+        findDocument.clinicPhoto = req.body.clinicPhoto || findDocument.clinicPhoto;
+        findDocument.letterHead = req.body.letterHead || findDocument.letterHead;
+        findDocument.registrationCertificate = req.body.registrationCertificate || findDocument.registrationCertificate;
+        findDocument.medicalDegrees = req.body.medicalDegrees || findDocument.medicalDegrees;
+
+        findDocument.registration2 = true;
+        const updated = await findDocument.save();
+        return res.status(200).json({ message: "Updated", data: updated });
+    } catch (error) {
+        console.error("An error occurred:", error);
+        return res.status(500).json({
+            message: "An error occurred. Please try again later.",
+            error: error.message,
+        });
+    }
+};
+
+
+exports.registration3 = async (req, res) => {
+    try {
+        const doctorId = req.params.doctorId;
+        const existingDoctorID = await Doctor.findById(doctorId);
+
+        if (!existingDoctorID) {
+            return res.status(StatusCodes.CONFLICT).json({
+                status: 'Failed',
+                message: 'DoctorId not exists.',
+            });
+        }
+
+        const result = await cloudinary.uploads(req.file.path);
+
+        existingDoctorID.idProof = result.url;
+        existingDoctorID.cloudinary_id = result.id;
+
+        await existingDoctorID.save();
+
+        return res.status(StatusCodes.CREATED).json({
+            status: 'Success',
+            message: 'Doctor details updated successfully.',
+            data: existingDoctorID.idProof,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
+            error: error.message,
+        });
+    }
+};
 
 exports.updateProfile = async (req, res) => {
     try {
