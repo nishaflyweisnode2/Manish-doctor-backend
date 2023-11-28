@@ -566,6 +566,35 @@ exports.getDoctorById = async (req, res) => {
     }
 };
 
+exports.getDoctor = async (req, res) => {
+    try {
+        const doctorId = req.user.id;
+        console.log(doctorId);
+
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: 'Failed',
+                message: 'Doctor not found.',
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            status: 'Success',
+            data: doctor,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'Failed',
+            message: 'Oops!!! Error occurs.',
+            error: error.message,
+        });
+    }
+};
+
+
 
 exports.deleteDoctor = async (req, res) => {
     try {

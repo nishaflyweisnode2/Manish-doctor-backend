@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { SignUpUser, loginUser, verifyOTP, resendOTP, addDoctorByAdmin, adminDeleteDoctorById, adminGetDoctorById, adminGetAllDoctors, updateDoctorById, registration1, registration2, registration2body, registration3, updateProfile, updateDoctorAvailability, updateNumberOfPatients, deleteDoctorSlot, getDoctorAppointment,
-    getAllDoctors, getDoctorById, deleteDoctor, getPatientsByDoctorId, addRatingAndReview, getDoctorRatings, updateReview, deleteReview, getAllReviews, addReplyToRating } = require("../Controllers/doctorController");
+    getAllDoctors, getDoctorById, getDoctor, deleteDoctor, getPatientsByDoctorId, addRatingAndReview, getDoctorRatings, updateReview, deleteReview, getAllReviews, addReplyToRating } = require("../Controllers/doctorController");
 const upload = require("../utils/multer")
 const { kpUpload, storage11 } = require("../utils/cloudinary")
 
@@ -23,6 +23,7 @@ router.put('/registration3/:doctorId', verifyToken, upload.single("idProof"), re
 router.put('/update-profile/:doctorId', verifyToken, storage11.single("doctorspicture"), updateProfile);
 router.get('/doctors', verifyToken, getAllDoctors);
 router.get('/doctors/:doctorId', verifyToken, getDoctorById);
+router.get('/doctors/doctor/profile', verifyToken, getDoctor);
 router.delete('/doctors/:doctorId', verifyToken, deleteDoctor);
 router.put('/admin/doctors/:doctorId/updateAvailability', verifyTokenwithAdmin, updateDoctorAvailability);
 router.put('/doctors/:doctorId/updateAvailability', verifyToken, updateDoctorAvailability);
