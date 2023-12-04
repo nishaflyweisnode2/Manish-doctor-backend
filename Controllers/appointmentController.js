@@ -98,7 +98,17 @@ exports.createAppointment = async (req, res) => {
 
 exports.getAppointments = async (req, res) => {
     try {
-        const appointments = await Appointment.find().populate('doctor').populate('user').populate('avilableTime');
+        const appointments = await Appointment.find()
+            .populate({
+                path: 'doctor',
+                populate: {
+                    path: 'specialityId',
+                    model: 'Specialist',
+                },
+            })
+            .populate('user')
+            .populate('avilableTime');
+
         return res.status(200).json({
             status: 'Success',
             data: appointments,
@@ -117,7 +127,16 @@ exports.getAppointments = async (req, res) => {
 
 exports.getAppointmentById = async (req, res) => {
     try {
-        const appointment = await Appointment.findById(req.params.appointmentId).populate('doctor').populate('user').populate('avilableTime');
+        const appointment = await Appointment.findById(req.params.appointmentId)
+            .populate({
+                path: 'doctor',
+                populate: {
+                    path: 'specialityId',
+                    model: 'Specialist',
+                },
+            })
+            .populate('user')
+            .populate('avilableTime');
 
         if (!appointment) {
             return res.status(404).json({

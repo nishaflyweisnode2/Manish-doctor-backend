@@ -524,7 +524,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.getAllDoctors = async (req, res) => {
     try {
-        const doctors = await Doctor.find();
+        const doctors = await Doctor.find().populate('specialityId');
         return res.status(StatusCodes.OK).json({
             status: 'Success',
             data: doctors,
@@ -543,7 +543,7 @@ exports.getAllDoctors = async (req, res) => {
 exports.getDoctorById = async (req, res) => {
     try {
         const doctorId = req.params.doctorId;
-        const doctor = await Doctor.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId).populate('specialityId');
 
         if (!doctor) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -571,7 +571,7 @@ exports.getDoctor = async (req, res) => {
         const doctorId = req.user.id;
         console.log(doctorId);
 
-        const doctor = await Doctor.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId).populate('specialityId');
 
         if (!doctor) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -795,6 +795,13 @@ exports.getDoctorAppointment = async (req, res) => {
         }
 
         const appointments = await Appointment.find({ 'doctor': doctorId })
+            .populate({
+                path: 'doctor',
+                populate: {
+                    path: 'specialityId',
+                    model: 'Specialist',
+                },
+            })
             .populate('user', 'firstname lastname userspicture')
             .populate('avilableTime')
             .exec();
