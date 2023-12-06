@@ -54,7 +54,8 @@ exports.getAllPatientReports = async (req, res) => {
         path: 'consult.name',
         select: 'doctorname doctorspicture phonenumber',
         model: Doctor,
-      });
+      })
+      .populate('user');
 
     return res.status(StatusCodes.OK).json({
       status: 'Success',
@@ -79,7 +80,8 @@ exports.getPatientReportById = async (req, res) => {
         path: 'consult.name',
         select: 'doctorname doctorspicture phonenumber',
         model: Doctor,
-      });
+      })
+      .populate('user');
 
     if (!patientReport) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -97,6 +99,39 @@ exports.getPatientReportById = async (req, res) => {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       status: 'Failed',
       message: 'Error retrieving Patient Report',
+      error: error.message,
+    });
+  }
+};
+
+
+exports.getPatientReportByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const patientReports = await PatientReport.find({ user: userId })
+      .populate({
+        path: 'consult.name',
+        select: 'doctorname doctorspicture phonenumber',
+        model: Doctor,
+      })
+      .populate('user');
+
+    if (!patientReports || patientReports.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        status: 'Failed',
+        message: 'Patient Reports not found for the given user ID',
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      status: 'Success',
+      data: patientReports,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: 'Failed',
+      message: 'Error retrieving Patient Reports',
       error: error.message,
     });
   }

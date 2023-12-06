@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const { Schema, model } = require('mongoose');
 
 const patientReportSchema = new Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     healthcareOrganization: {
         name: String,
         age: Number,
@@ -49,7 +53,7 @@ const patientReportSchema = new Schema({
         visceralFat: String,
     },
     provisionalDiagnosis: String,
-    investigationsAdvised: [String],
+    investigationsAdvised: String,
     diagnosis: String,
     detailedNutritionalAssessment: Boolean,
     carePlan: {

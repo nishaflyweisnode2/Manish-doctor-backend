@@ -13,7 +13,7 @@ router.post("/verify/otp/:id", verifyOTP);
 router.post("/resend/otp", resendOTP);
 router.post('/addDoctor', verifyTokenwithAdmin, upload.single("doctorspicture"), addDoctorByAdmin);
 router.get('/getallDoctor', verifyTokenwithAuthorization, adminGetAllDoctors);
-router.get('/getdoctorbyid/:id', verifyTokenwithAdmin, adminGetDoctorById);
+router.get('/getdoctorbyid/:id', verifyToken, adminGetDoctorById);
 router.put('/updateDoctor/:id', verifyTokenwithAdmin, upload.single("doctorspicture"), updateDoctorById);
 router.delete('/deleteDoctor/:id', verifyTokenwithAdmin, adminDeleteDoctorById);
 router.put('/registration1/:doctorId', verifyToken, upload.single("doctorspicture"), registration1);
