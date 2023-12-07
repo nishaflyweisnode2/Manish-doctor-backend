@@ -794,7 +794,7 @@ exports.getDoctorAppointment = async (req, res) => {
             });
         }
 
-        const appointments = await Appointment.find({ 'doctor': doctorId })
+        const appointments = await Appointment.find({ 'doctor': doctorId, status: 'Pending' })
             .populate({
                 path: 'doctor',
                 populate: {
@@ -929,7 +929,10 @@ exports.getDoctorRatings = async (req, res) => {
             });
         }
 
-        const doctor = await Doctor.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId).populate({
+            path: 'ratings',
+            populate: { path: 'user' }
+        });
 
         if (!doctor) {
             return res.status(StatusCodes.NOT_FOUND).json({

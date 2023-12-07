@@ -218,3 +218,44 @@ exports.deleteAppointment = async (req, res) => {
         });
     }
 };
+
+
+exports.updateAppointmentStatus = async (req, res) => {
+    try {
+        const appointmentId = req.params.appointmentId
+        const { newStatus } = req.body;
+
+        if (!appointmentId || !newStatus) {
+            return res.status(400).json({
+                status: 'Failed',
+                message: 'Appointment ID and new status are required for updating status',
+            });
+        }
+
+        const appointment = await Appointment.findById(appointmentId);
+
+        if (!appointment) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Appointment not found',
+            });
+        }
+
+        appointment.status = newStatus;
+        await appointment.save();
+
+        return res.status(200).json({
+            status: 'Success',
+            message: 'Appointment status updated successfully',
+            data: appointment,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Failed',
+            message: 'Error updating appointment status',
+            error: error.message,
+        });
+    }
+};
+

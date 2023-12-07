@@ -11,7 +11,7 @@ const doctorSchema = new Schema({
     doctorname: { type: String, },
     doctorspicture: { type: String },
     yearexperience: { type: String },
-    // rating: { type: SchemaTypes.Double, default: 0 },
+    rating: { type: SchemaTypes.Double, default: 0 },
     ratings: [
         {
             rating: { type: SchemaTypes.Double },

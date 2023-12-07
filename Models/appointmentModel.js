@@ -20,6 +20,11 @@ const appointmentSchema = new mongoose.Schema({
         type: String,
         enum: ['Morning', 'Afternoon', 'Evening'],
     },
+    status: {
+        type: String,
+        enum: ['Pending', 'Complete'],
+        default: 'Pending'
+    },
     appointmentType: {
         type: String,
         enum: ['Online', 'Offline'],

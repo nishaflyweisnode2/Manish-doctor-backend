@@ -11,6 +11,8 @@ router.get('/appointments/:appointmentId', verifyToken, appointmentController.ge
 router.post('/appointments', verifyToken, appointmentController.createAppointment);
 router.put('/appointments/:appointmentId', verifyToken, appointmentController.updateAppointment);
 router.delete('/appointments/:appointmentId', verifyToken, appointmentController.deleteAppointment);
+router.put('/appointments/update-status/:appointmentId', verifyToken, appointmentController.updateAppointmentStatus);
+
 
 
 
