@@ -56,6 +56,9 @@ const doctorSchema = new Schema({
     height: { type: Number },
     registration1: { type: Boolean, default: false },
     registration2: { type: Boolean, default: false },
+    socialType: {
+        type: String,
+    },
 }, { timestamps: true });
 
 doctorSchema.index({ location: '2dsphere' });

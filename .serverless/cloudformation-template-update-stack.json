@@ -162,7 +162,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/manish-backend/dev/1701957733330-2023-12-07T14:02:13.330Z/manish-backend.zip"
+          "S3Key": "serverless/manish-backend/dev/1702024894254-2023-12-08T08:41:34.254Z/manish-backend.zip"
         },
         "Handler": "index.handler",
         "Runtime": "nodejs18.x",
@@ -180,14 +180,14 @@
         "AppLogGroup"
       ]
     },
-    "AppLambdaVersionoxScwCgj7h9ATOJbcONpXK5bZ3nOhULFHVA3GKF7Rno": {
+    "AppLambdaVersionBoJXkNcpFk7YLjIqeqtQtvZ5fXnkhTBcnfVtlJxsEc": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "AppLambdaFunction"
         },
-        "CodeSha256": "GuB084HL2mpZVXX9vHbIwv2ArbG5gZAFU93+J7T6mdg="
+        "CodeSha256": "xhW8PpPleBMmHHQDJl5tgSnQMZmApMjYv/tPYIMWKvU="
       }
     },
     "ApiGatewayRestApi": {
@@ -408,7 +408,7 @@
         "AppLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1701957645662": {
+    "ApiGatewayDeployment1702024838070": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -473,7 +473,7 @@
     "AppLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AppLambdaVersionoxScwCgj7h9ATOJbcONpXK5bZ3nOhULFHVA3GKF7Rno"
+        "Ref": "AppLambdaVersionBoJXkNcpFk7YLjIqeqtQtvZ5fXnkhTBcnfVtlJxsEc"
       },
       "Export": {
         "Name": "sls-manish-backend-dev-AppLambdaFunctionQualifiedArn"

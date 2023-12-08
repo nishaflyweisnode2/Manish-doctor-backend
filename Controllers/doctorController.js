@@ -147,6 +147,45 @@ exports.resendOTP = async (req, res) => {
 };
 
 
+module.exports.socialLogin = async (req, res) => {
+    try {
+        const { doctorName, email, socialType } = req.body;
+
+        const existingUser = await Doctor.findOne({ $or: [{ email }], });
+
+        if (existingUser) {
+            const accessToken = jwt.sign({ id: existingUser.id, email: existingUser.email }, process.env.SECRETK, { expiresIn: "365d" });
+            return res.status(200).json({
+                status: 200,
+                msg: "Login successfully",
+                userId: existingUser._id,
+                accessToken,
+            });
+        } else {
+            const user = await Doctor.create({ doctorName, email, socialType });
+
+            if (user) {
+                const accessToken = jwt.sign({ id: user.id, email: user.email }, process.env.SECRETK, { expiresIn: "365d" });
+
+                return res.status(200).json({
+                    status: 200,
+                    msg: "Login successfully",
+                    userId: user._id,
+                    accessToken,
+                });
+            }
+        }
+    } catch (err) {
+        console.error("Error in socialLogin:", err);
+        return res.status(500).json({
+            status: 500,
+            message: "Server error",
+            error: err.message,
+        });
+    }
+};
+
+
 exports.addDoctorByAdmin = async (req, res) => {
     try {
         const {

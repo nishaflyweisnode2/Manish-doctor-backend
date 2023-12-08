@@ -196,29 +196,32 @@ module.exports.login = async (req, res) => {
                 const salt = await bcrypt.genSalt(saltRounds);
                 const hashedOTP = await bcrypt.hash(OTP, salt);
 
-                const accessToken = jwt.sign({
-                    id: user._id,
-                    email: user.email,
-                    firstname: user.firstname,
-                    lastname: user.lastname
-                }, process.env.SECRETK, { expiresIn: "365" });
+                const accessToken = jwt.sign({id: user.id,email: user.email}, process.env.SECRETK, { expiresIn: "365d" });
+
 
                 const otp = new Otp({ email, otp: hashedOTP });
                 await otp.save();
 
-                res.status(200).json({
+                return res.status(200).json({
+                    status: 200,
+                    msg: "Login successfully",
+                    userId: user._id,
                     accessToken,
                     otp: OTP
                 });
             } else {
-                res.status(401).json({ message: "Invalid password." });
+                return res.status(401).json({ status: 401, message: "Invalid password." });
             }
         } else {
-            res.status(401).json({ message: "User not found." });
+            return res.status(401).json({ status: 401, message: "User not found." });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error." });
+        console.error("Error in login:", error);
+        return res.status(500).json({
+            status: 500,
+            message: "Internal server error",
+            error: error.message,
+        });
     }
 };
 
@@ -226,20 +229,10 @@ module.exports.socialLogin = async (req, res) => {
     try {
         const { firstname, lastname, email, socialType } = req.body;
 
-        const existingUser = await userModel.findOne({
-            $or: [{ email }],
-        });
+        const existingUser = await userModel.findOne({ $or: [{ email }], });
 
         if (existingUser) {
-            const accessToken = jwt.sign({
-                id: existingUser._id,
-                email: existingUser.email,
-                firstname: existingUser.firstname,
-                lastname: existingUser.lastname
-            }, process.env.SECRETK, { expiresIn: "365" });
-
-            // const token = jwt.sign({ _id: existingUser._id }, process.env.SECRET_KEY);
-
+            const accessToken = jwt.sign({id: existingUser.id,email: existingUser.email}, process.env.SECRETK, { expiresIn: "365d" });
             return res.status(200).json({
                 status: 200,
                 msg: "Login successfully",
@@ -250,25 +243,23 @@ module.exports.socialLogin = async (req, res) => {
             const user = await userModel.create({ firstname, lastname, email, socialType, userType: "Distributor" });
 
             if (user) {
-                const accessToken = jwt.sign({
-                    id: user._id,
-                    email: user.email,
-                    firstname: user.firstname,
-                    lastname: user.lastname
-                }, process.env.SECRETK, { expiresIn: "365" });
-
+                const accessToken = jwt.sign({id: user.id,email: user.email}, process.env.SECRETK, { expiresIn: "365d" });
 
                 return res.status(200).json({
                     status: 200,
                     msg: "Login successfully",
-                    userId: newUser._id,
+                    userId: user._id,
                     accessToken,
                 });
             }
         }
     } catch (err) {
-        console.error(err);
-        return res.status(500).json({ status: 500, message: "Server error", error: err.message });
+        console.error("Error in socialLogin:", err);
+        return res.status(500).json({
+            status: 500,
+            message: "Server error",
+            error: err.message,
+        });
     }
 };
 
@@ -450,20 +441,31 @@ module.exports.getallusers = async (req, res) => {
 
 module.exports.getuserprofile = async (req, res) => {
     try {
-        const data = await userModel.findOne({ _id: req.user.id })
-        //.populate({path:"userId"});
+        const data = await userModel.findOne({ _id: req.user.id });
+
+        if (!data) {
+            return res.status(404).json({
+                message: "User not found",
+                status: 404,
+            });
+        }
+
         res.status(200).json({
-            message: "success",
+            message: "Success",
             status: 200,
-            data
-        })
+            data,
+        });
+    } catch (error) {
+        console.error("Error in getuserprofile:", error);
+
+        res.status(500).json({
+            message: "Internal server error",
+            status: 500,
+            error: error.message,
+        });
     }
-    catch (error) {
-        res.status(200).json({
-            message: error
-        })
-    }
-}
+};
+
 
 module.exports.updateusersprofile = async (req, res) => {
     try {
